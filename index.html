@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Bot</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2>⚛️ Physics & Engineering Bot</h2>
+            <p>Fizika va muhandislik savollaringizni bering</p>
+        </div>
+        <div class="chat-messages" id="messages"></div>
+        <div class="chat-input">
+            <input type="text" id="userInput" placeholder="Savol yozing..." />
+            <button onclick="sendMessage()">Yuborish</button>
+        </div>
+    </div>
+    <script>
+        const messagesDiv = document.getElementById('messages');
+        const userInput = document.getElementById('userInput');
+
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        function addMessage(text, isUser) {
+            const div = document.createElement('div');
+            div.className = `message ${isUser ? 'user' : 'bot'}`;
+            div.innerText = text;
+            messagesDiv.appendChild(div);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            addMessage(text, true);
+            userInput.value = '';
+            addMessage('Javob yozilmoqda...', false);
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text })
+                });
+
+                const data = await response.json();
+                messagesDiv.lastChild.remove();
+                addMessage(data.reply, false);
+            } catch (err) {
+                messagesDiv.lastChild.remove();
+                addMessage('Xatolik yuz berdi. Qayta urining.', false);
+            }
+        }
+    </script>
+</body>
+</html>
